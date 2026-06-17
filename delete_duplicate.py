@@ -3,7 +3,7 @@ import os
 folder1 = r"/mnt/c/Users/finn.zhang/project/Datasets/hainanjiahua_20260416/NG_1"
 folder2 = r"/mnt/c/Users/finn.zhang/project/Datasets/hainanjiahua_20260416/ng"
 
-extensions = {'.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff'}
+extensions = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 
 files1 = set()
 for f in os.listdir(folder1):
