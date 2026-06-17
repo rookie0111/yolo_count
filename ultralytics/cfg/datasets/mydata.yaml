@@ -24,5 +24,3 @@ test: # test images (optional)
 # Classes
 names:
   0: label
-
-
