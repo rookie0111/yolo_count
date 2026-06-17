@@ -1,6 +1,6 @@
-import os
-import json
 import glob
+import json
+import os
 
 
 def ensure_dir(path):
@@ -13,8 +13,7 @@ def normalize_point(x, y, w, h):
 
 
 def convert_one_json(json_path, output_txt_path, class_map=None):
-    """
-    将单个 json 转为 yolo obb txt
+    """将单个 json 转为 yolo obb txt.
 
     参数：
     - json_path: 输入json路径
@@ -22,7 +21,7 @@ def convert_one_json(json_path, output_txt_path, class_map=None):
     - class_map: 类别映射字典，例如 {"0":0, "defect":1}
                  如果为None，则尝试将 label 直接转 int
     """
-    with open(json_path, "r", encoding="utf-8") as f:
+    with open(json_path, encoding="utf-8") as f:
         data = json.load(f)
 
     img_w = data.get("imageWidth", None)
@@ -76,9 +75,7 @@ def convert_one_json(json_path, output_txt_path, class_map=None):
 
 
 def batch_convert_json_to_yolo_obb(json_dir, output_dir, class_map=None, recursive=False):
-    """
-    批量转换文件夹下所有json
-    """
+    """批量转换文件夹下所有json."""
     ensure_dir(output_dir)
 
     if recursive:
@@ -114,7 +111,7 @@ def batch_convert_json_to_yolo_obb(json_dir, output_dir, class_map=None, recursi
 
 if __name__ == "__main__":
     # ======== 这里改成你的路径 ========
-    json_dir =  r"/mnt/c/Users/finn.zhang/project/Datasets/20260515_transparent_80ml/yolo_dataset/images/train"
+    json_dir = r"/mnt/c/Users/finn.zhang/project/Datasets/20260515_transparent_80ml/yolo_dataset/images/train"
     output_dir = r"/mnt/c/Users/finn.zhang/project/Datasets/20260515_transparent_80ml/yolo_dataset/labels/train"
 
     # 如果你的 label 本身就是 "0"、"1"、"2"，可以设为 None
@@ -127,12 +124,4 @@ if __name__ == "__main__":
     #     "dirty": 2
     # }
 
-    batch_convert_json_to_yolo_obb(
-        json_dir=json_dir,
-        output_dir=output_dir,
-        class_map=class_map,
-        recursive=False
-    )
-
-
-
+    batch_convert_json_to_yolo_obb(json_dir=json_dir, output_dir=output_dir, class_map=class_map, recursive=False)
