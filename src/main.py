@@ -4,7 +4,7 @@ import time
 from pathlib import Path
 
 import cv2
-
+# "/mnt/d/download/vidu-video-3321313083087446.mp4"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ultralytics.solutions.object_counter import ObjectCounter
@@ -19,11 +19,7 @@ def main():
     parser = argparse.ArgumentParser(description="Conveyor Belt Bag Counter")
     parser.add_argument("--config", type=str, default="configs/runtime.yaml", help="Path to runtime config YAML")
     parser.add_argument("--source", type=str, default=None, help="Video source (camera index or video path)")
-    parser.add_argument("--model", type=str, default=None, help="YOLO model weight path (override config)")
-    parser.add_argument("--conf", type=float, default=None, help="Confidence threshold (override config)")
     parser.add_argument("--show", action="store_true", help="Show output window")
-    parser.add_argument("--save", action="store_true", help="Save output video with annotations")
-    parser.add_argument("--output", type=str, default=None, help="Output video path (default: outputs/predict.mp4)")
     parser.add_argument("--no-display", action="store_true", help="Disable serial display")
     args = parser.parse_args()
 
@@ -32,10 +28,6 @@ def main():
 
     if args.source is not None:
         kwargs["camera_source"] = args.source
-    if args.model is not None:
-        kwargs["model"] = args.model
-    if args.conf is not None:
-        kwargs["conf"] = args.conf
     if args.show:
         kwargs["show"] = True
 
@@ -72,8 +64,6 @@ def main():
     target_fps = cfg.get("runtime", {}).get("target_fps", 10)
     frame_interval = 1.0 / target_fps if target_fps > 0 else 0
 
-    writer = None
-
     try:
         while True:
             loop_start = time.time()
@@ -84,19 +74,6 @@ def main():
                 break
 
             result = counter.process(frame)
-            plot_im = result.plot_im
-
-            if writer is None and args.save:
-                h, w = plot_im.shape[:2]
-                out_fps = camera_fps if camera_fps > 0 else 30
-                default_out = args.output or "outputs/predict.mp4"
-                Path(default_out).parent.mkdir(parents=True, exist_ok=True)
-                fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-                writer = cv2.VideoWriter(default_out, fourcc, out_fps, (w, h))
-                print(f"Saving output video to: {default_out}")
-
-            if writer is not None:
-                writer.write(plot_im)
 
             if result.total_count != last_count:
                 last_count = result.total_count
@@ -116,8 +93,6 @@ def main():
         print("\nShutting down.")
     finally:
         cap.release()
-        if writer is not None:
-            writer.release()
         if number_display is not None:
             number_display.close()
         cv2.destroyAllWindows()
