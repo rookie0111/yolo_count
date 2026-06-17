@@ -1,30 +1,36 @@
+import argparse
+import logging
 import os
 import time
+
 import cv2
-import argparse
 import numpy as np
 import onnxruntime as ort
-import logging
 
 logging.basicConfig(level=logging.INFO)
 
 COLORS = [
-    [56, 0, 255], [226, 255, 0], [0, 94, 255], [0, 37, 255], [0, 255, 94],
-    [255, 226, 0], [0, 18, 255], [255, 151, 0], [170, 0, 255], [0, 255, 56],
-    [255, 0, 75], [0, 75, 255], [0, 255, 169], [255, 0, 207], [75, 255, 0],
+    [56, 0, 255],
+    [226, 255, 0],
+    [0, 94, 255],
+    [0, 37, 255],
+    [0, 255, 94],
+    [255, 226, 0],
+    [0, 18, 255],
+    [255, 151, 0],
+    [170, 0, 255],
+    [0, 255, 56],
+    [255, 0, 75],
+    [0, 75, 255],
+    [0, 255, 169],
+    [255, 0, 207],
+    [75, 255, 0],
 ]
 
 
 class PostProcess:
     def __init__(
-        self,
-        conf_thresh=0.25,
-        nms_thresh=0.45,
-        nc=1,
-        agnostic=False,
-        multi_label=False,
-        max_det=300,
-        task="detect"
+        self, conf_thresh=0.25, nms_thresh=0.45, nc=1, agnostic=False, multi_label=False, max_det=300, task="detect"
     ):
         self.conf_thresh = conf_thresh
         self.nms_thresh = nms_thresh
@@ -36,7 +42,7 @@ class PostProcess:
         self.task = task
 
     def xywh2xyxy(self, x):
-        """Convert xywh to xyxy format"""
+        """Convert xywh to xyxy format."""
         y = np.copy(x)
         y[..., 0] = x[..., 0] - x[..., 2] / 2
         y[..., 1] = x[..., 1] - x[..., 3] / 2
@@ -45,7 +51,7 @@ class PostProcess:
         return y
 
     def nms(self, boxes, scores):
-        """Axis-aligned NMS"""
+        """Axis-aligned NMS."""
         if len(boxes) == 0:
             return []
 
@@ -79,23 +85,21 @@ class PostProcess:
         return keep
 
     def rotated_iou(self, box1, box2):
-        """
-        计算两个旋转框 IoU
-        box: [cx, cy, w, h, angle(rad)]
+        """计算两个旋转框 IoU box: [cx, cy, w, h, angle(rad)].
         """
         rect1 = (
             (float(box1[0]), float(box1[1])),
             (max(float(box1[2]), 1e-6), max(float(box1[3]), 1e-6)),
-            float(box1[4] * 180.0 / np.pi)
+            float(box1[4] * 180.0 / np.pi),
         )
         rect2 = (
             (float(box2[0]), float(box2[1])),
             (max(float(box2[2]), 1e-6), max(float(box2[3]), 1e-6)),
-            float(box2[4] * 180.0 / np.pi)
+            float(box2[4] * 180.0 / np.pi),
         )
 
         try:
-            inter_type, inter_pts = cv2.rotatedRectangleIntersection(rect1, rect2)
+            _inter_type, inter_pts = cv2.rotatedRectangleIntersection(rect1, rect2)
             if inter_pts is None:
                 return 0.0
 
@@ -110,9 +114,7 @@ class PostProcess:
             return 0.0
 
     def nms_rotated(self, rboxes, scores):
-        """
-        Rotated NMS
-        rboxes: [N, 5] => cx, cy, w, h, angle(rad)
+        """Rotated NMS rboxes: [N, 5] => cx, cy, w, h, angle(rad).
         """
         if len(rboxes) == 0:
             return []
@@ -139,7 +141,7 @@ class PostProcess:
         return keep
 
     def scale_boxes(self, boxes, img0_shape, ratio_pad):
-        """Rescale xyxy boxes from letterbox image to original image"""
+        """Rescale xyxy boxes from letterbox image to original image."""
         if len(boxes) == 0:
             return boxes
 
@@ -155,7 +157,7 @@ class PostProcess:
         return boxes
 
     def scale_rboxes(self, rboxes, img0_shape, ratio_pad):
-        """Rescale xywhr boxes from letterbox image to original image"""
+        """Rescale xywhr boxes from letterbox image to original image."""
         if len(rboxes) == 0:
             return rboxes
 
@@ -174,11 +176,7 @@ class PostProcess:
         return rboxes
 
     def __call__(self, preds_batch, img0_batch, ratio_pad_batch):
-        """
-        detect:
-            output -> [x1, y1, x2, y2, conf, cls]
-        obb:
-            output -> [cx, cy, w, h, conf, cls, angle]
+        """detect: output -> [x1, y1, x2, y2, conf, cls] obb: output -> [cx, cy, w, h, conf, cls, angle].
         """
         if isinstance(preds_batch, list) and len(preds_batch) == 1:
             preds = preds_batch[0]
@@ -205,7 +203,7 @@ class PostProcess:
                     continue
 
                 box = x[:, :4]
-                cls = x[:, 4:4 + nc]
+                cls = x[:, 4 : 4 + nc]
 
                 if self.multi_label:
                     i, j = np.where(cls > self.conf_thresh)
@@ -228,7 +226,7 @@ class PostProcess:
                 boxes_for_nms = x[:, :4] + np.hstack([c, c, c, c])
                 scores = x[:, 4]
 
-                keep = self.nms(boxes_for_nms, scores)[:self.max_det]
+                keep = self.nms(boxes_for_nms, scores)[: self.max_det]
                 x = x[keep]
 
                 img0_shape = img0_batch[xi]
@@ -247,7 +245,7 @@ class PostProcess:
             # [cx, cy, w, h, cls1, cls2, ..., angle]
             nc = self.nc
             angle_idx = 4 + nc
-            xc = preds[:, :, 4:4 + nc].max(axis=2) > self.conf_thresh
+            xc = preds[:, :, 4 : 4 + nc].max(axis=2) > self.conf_thresh
 
             for xi in range(bs):
                 pred = preds[xi]
@@ -257,16 +255,13 @@ class PostProcess:
                     batch_outs.append(np.zeros((0, 7), dtype=np.float32))
                     continue
 
-                box = x[:, :4]              # cx, cy, w, h
-                cls = x[:, 4:4 + nc]       # class scores
-                angle = x[:, angle_idx:angle_idx + 1]  # rad
+                box = x[:, :4]  # cx, cy, w, h
+                cls = x[:, 4 : 4 + nc]  # class scores
+                angle = x[:, angle_idx : angle_idx + 1]  # rad
 
                 if self.multi_label:
                     i, j = np.where(cls > self.conf_thresh)
-                    x = np.concatenate(
-                        [box[i], x[i, 4 + j, None], j.astype(np.float32)[:, None], angle[i]],
-                        axis=1
-                    )
+                    x = np.concatenate([box[i], x[i, 4 + j, None], j.astype(np.float32)[:, None], angle[i]], axis=1)
                 else:
                     conf = cls.max(axis=1, keepdims=True)
                     j = cls.argmax(axis=1, keepdims=True)
@@ -285,12 +280,9 @@ class PostProcess:
                 else:
                     c = x[:, 5:6] * self.max_wh
 
-                rboxes_for_nms = np.concatenate(
-                    [x[:, 0:1] + c, x[:, 1:2] + c, x[:, 2:4], x[:, 6:7]],
-                    axis=1
-                )
+                rboxes_for_nms = np.concatenate([x[:, 0:1] + c, x[:, 1:2] + c, x[:, 2:4], x[:, 6:7]], axis=1)
 
-                keep = self.nms_rotated(rboxes_for_nms, scores)[:self.max_det]
+                keep = self.nms_rotated(rboxes_for_nms, scores)[: self.max_det]
                 x = x[keep]
 
                 img0_shape = img0_batch[xi]
@@ -311,7 +303,7 @@ class PostProcess:
 
 class YOLO26:
     def __init__(self, onnx_path, conf_thresh=0.25, nms_thresh=0.45, task="detect"):
-        providers = ['CPUExecutionProvider']
+        providers = ["CPUExecutionProvider"]
         self.session = ort.InferenceSession(onnx_path, providers=providers)
 
         self.input_name = self.session.get_inputs()[0].name
@@ -339,12 +331,7 @@ class YOLO26:
         logging.info(f"Output shape: {self.output_shape}, nc={self.nc}")
 
         self.conf_thresh = conf_thresh
-        self.postprocess = PostProcess(
-            conf_thresh=conf_thresh,
-            nms_thresh=nms_thresh,
-            nc=self.nc,
-            task=self.task
-        )
+        self.postprocess = PostProcess(conf_thresh=conf_thresh, nms_thresh=nms_thresh, nc=self.nc, task=self.task)
 
         self.preprocess_time = 0.0
         self.inference_time = 0.0
@@ -356,7 +343,7 @@ class YOLO26:
             new_shape = (new_shape, new_shape)
 
         r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
-        new_unpad = (int(round(shape[1] * r)), int(round(shape[0] * r)))
+        new_unpad = (round(shape[1] * r), round(shape[0] * r))
         dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]
         dw /= 2
         dh /= 2
@@ -364,8 +351,8 @@ class YOLO26:
         if shape[::-1] != new_unpad:
             im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
 
-        top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
-        left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+        top, bottom = round(dh - 0.1), round(dh + 0.1)
+        left, right = round(dw - 0.1), round(dw + 0.1)
         im = cv2.copyMakeBorder(im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
         logging.info(f"letterbox: shape={shape}, r={r}, new_unpad={new_unpad}, dw={dw}, dh={dh}")
@@ -409,9 +396,7 @@ class YOLO26:
 
 
 def xywhr2xyxyxyxy(box):
-    """
-    box: [cx, cy, w, h, angle(rad)]
-    return: 4 points shape [4, 2]
+    """box: [cx, cy, w, h, angle(rad)] return: 4 points shape [4, 2].
     """
     cx, cy, w, h, angle = box
     cos_a = np.cos(angle)
@@ -420,17 +405,17 @@ def xywhr2xyxyxyxy(box):
     dx = w / 2.0
     dy = h / 2.0
 
-    pts = np.array([
-        [-dx, -dy],
-        [ dx, -dy],
-        [ dx,  dy],
-        [-dx,  dy],
-    ], dtype=np.float32)
+    pts = np.array(
+        [
+            [-dx, -dy],
+            [dx, -dy],
+            [dx, dy],
+            [-dx, dy],
+        ],
+        dtype=np.float32,
+    )
 
-    R = np.array([
-        [cos_a, -sin_a],
-        [sin_a,  cos_a]
-    ], dtype=np.float32)
+    R = np.array([[cos_a, -sin_a], [sin_a, cos_a]], dtype=np.float32)
 
     pts = pts @ R.T
     pts[:, 0] += cx
@@ -450,9 +435,7 @@ def draw_numpy(image, boxes, classes_ids, conf_scores):
 
 
 def draw_numpy_obb(image, rboxes, classes_ids, conf_scores):
-    """
-        rboxes: [N, 5] -> [cx, cy, w, h, angle(rad)]
-    """
+    """Rboxes: [N, 5] -> [cx, cy, w, h, angle(rad)]."""
     for i in range(len(rboxes)):
         cls_id = int(classes_ids[i])
         color = COLORS[cls_id % len(COLORS)]
@@ -485,7 +468,7 @@ def visualize_and_save(image, detections, output_path, conf_thresh=0.25, task="d
                 cls_id = int(det[i, 5])
                 conf = det[i, 4]
                 logging.info(
-                    f"[DET] Box {i+1}: cls={cls_id}, conf={conf:.3f}, "
+                    f"[DET] Box {i + 1}: cls={cls_id}, conf={conf:.3f}, "
                     f"coords=[{box[0]:.1f}, {box[1]:.1f}, {box[2]:.1f}, {box[3]:.1f}]"
                 )
 
@@ -495,23 +478,23 @@ def visualize_and_save(image, detections, output_path, conf_thresh=0.25, task="d
 
         if len(det) > 0:
             # 正确提取 xywhr
-            rboxes = det[:, [0, 1, 2, 3, 6]]   # cx, cy, w, h, angle
+            rboxes = det[:, [0, 1, 2, 3, 6]]  # cx, cy, w, h, angle
             classes = det[:, 5]
             scores = det[:, 4]
 
             draw_numpy_obb(img, rboxes, classes_ids=classes, conf_scores=scores)
 
             for i in range(len(det)):
-                box = det[i, [0, 1, 2, 3, 6]]   # 注意这里也要取 angle，不是 conf
+                box = det[i, [0, 1, 2, 3, 6]]  # 注意这里也要取 angle，不是 conf
                 cls_id = int(det[i, 5])
                 conf = det[i, 4]
                 pts = xywhr2xyxyxyxy(box)
 
                 logging.info(
-                    f"[OBB] Box {i+1}: cls={cls_id}, conf={conf:.3f}, "
+                    f"[OBB] Box {i + 1}: cls={cls_id}, conf={conf:.3f}, "
                     f"xywhr=[{box[0]:.1f}, {box[1]:.1f}, {box[2]:.1f}, {box[3]:.1f}, {box[4]:.4f}]"
                 )
-                logging.info(f"[OBB] Polygon {i+1}: {pts.tolist()}")
+                logging.info(f"[OBB] Polygon {i + 1}: {pts.tolist()}")
 
     else:
         raise ValueError(f"Unsupported task: {task}")
@@ -535,7 +518,7 @@ def main(args):
     img_paths = []
     if os.path.isdir(args.data):
         for fn in sorted(os.listdir(args.data)):
-            if fn.lower().endswith(('.jpg', '.png', '.jpeg', '.bmp', '.webp', '.tif', '.tiff')):
+            if fn.lower().endswith((".jpg", ".png", ".jpeg", ".bmp", ".webp", ".tif", ".tiff")):
                 img_paths.append(os.path.join(args.data, fn))
     elif os.path.isfile(args.data):
         img_paths.append(args.data)
@@ -582,27 +565,21 @@ def main(args):
 def argsparser():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        '--data',
+        "--data",
         type=str,
         default="/mnt/c/Users/finn.zhang/project/Datasets/JieMei/test/good/NG_NG_20260311162212348.jpg",
-        help='image directory or single image path'
+        help="image directory or single image path",
     )
     parser.add_argument(
-        '--onnx',
+        "--onnx",
         type=str,
         default="/home/finn/ultralytics-main/runs/obb/train/weights/best.onnx",
-        help='onnx model path'
+        help="onnx model path",
     )
-    parser.add_argument('--output', type=str, default="./results/images", help='output directory')
-    parser.add_argument('--conf_thresh', type=float, default=0.25)
-    parser.add_argument('--iou_thresh', type=float, default=0.7)
-    parser.add_argument(
-        '--task',
-        type=str,
-        default='obb',
-        choices=['detect', 'obb'],
-        help='model task type'
-    )
+    parser.add_argument("--output", type=str, default="./results/images", help="output directory")
+    parser.add_argument("--conf_thresh", type=float, default=0.25)
+    parser.add_argument("--iou_thresh", type=float, default=0.7)
+    parser.add_argument("--task", type=str, default="obb", choices=["detect", "obb"], help="model task type")
     return parser.parse_args()
 
 
