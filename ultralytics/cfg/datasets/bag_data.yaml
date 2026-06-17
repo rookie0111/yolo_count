@@ -4,9 +4,9 @@ path: /mnt/c/Users/finn.zhang/project/Datasets/ObjectCounting.v1i.yolo26
 train: # train images (relative to 'path') 16551 images
   - images/train
 
-val: 
+val:
   - images/val
-test: 
+test:
   - images/val
 
 names:

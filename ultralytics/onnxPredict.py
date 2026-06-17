@@ -1,18 +1,31 @@
+import argparse
+import logging
 import os
 import time
+
 import cv2
-import argparse
 import numpy as np
 import onnxruntime as ort
-import logging
 
 logging.basicConfig(level=logging.INFO)
 
 
 COLORS = [
-    [56, 0, 255], [226, 255, 0], [0, 94, 255], [0, 37, 255], [0, 255, 94],
-    [255, 226, 0], [0, 18, 255], [255, 151, 0], [170, 0, 255], [0, 255, 56],
-    [255, 0, 75], [0, 75, 255], [0, 255, 169], [255, 0, 207], [75, 255, 0],
+    [56, 0, 255],
+    [226, 255, 0],
+    [0, 94, 255],
+    [0, 37, 255],
+    [0, 255, 94],
+    [255, 226, 0],
+    [0, 18, 255],
+    [255, 151, 0],
+    [170, 0, 255],
+    [0, 255, 56],
+    [255, 0, 75],
+    [0, 75, 255],
+    [0, 255, 169],
+    [255, 0, 207],
+    [75, 255, 0],
 ]
 
 
@@ -30,7 +43,7 @@ class PostProcess:
         return 1 / (1 + np.exp(-x))
 
     def xywh2xyxy(self, x):
-        """Convert xywh to xyxy format"""
+        """Convert xywh to xyxy format."""
         y = np.copy(x)
         y[..., 0] = x[..., 0] - x[..., 2] / 2
         y[..., 1] = x[..., 1] - x[..., 3] / 2
@@ -39,7 +52,7 @@ class PostProcess:
         return y
 
     def nms(self, boxes, scores):
-        """Non-maximum suppression, matching ultralytics logic"""
+        """Non-maximum suppression, matching ultralytics logic."""
         x1 = boxes[:, 0]
         y1 = boxes[:, 1]
         x2 = boxes[:, 2]
@@ -65,7 +78,7 @@ class PostProcess:
         return keep
 
     def scale_boxes(self, img1_shape, boxes, img0_shape, ratio_pad):
-        """Rescale boxes from img1_shape to img0_shape, matching ultralytics ops.scale_boxes"""
+        """Rescale boxes from img1_shape to img0_shape, matching ultralytics ops.scale_boxes."""
         gain = ratio_pad[0]
         pad = ratio_pad[1]
 
@@ -82,7 +95,7 @@ class PostProcess:
         return boxes
 
     def __call__(self, preds_batch, img0_batch, ratio_pad_batch):
-        """Postprocess predictions, matching ultralytics non_max_suppression logic"""
+        """Postprocess predictions, matching ultralytics non_max_suppression logic."""
         if isinstance(preds_batch, list) and len(preds_batch) == 1:
             preds = preds_batch[0]
         else:
@@ -129,7 +142,7 @@ class PostProcess:
             scores = x[:, 4]
 
             keep = self.nms(boxes, scores)
-            keep = keep[:self.max_det]
+            keep = keep[: self.max_det]
             x = x[keep]
 
             img0_shape = img0_batch[xi]
@@ -147,7 +160,7 @@ class PostProcess:
 
 class YOLO26:
     def __init__(self, onnx_path, conf_thresh=0.25, nms_thresh=0.45):
-        providers = ['CPUExecutionProvider']
+        providers = ["CPUExecutionProvider"]
         self.session = ort.InferenceSession(onnx_path, providers=providers)
 
         self.input_name = self.session.get_inputs()[0].name
@@ -178,7 +191,7 @@ class YOLO26:
             new_shape = (new_shape, new_shape)
 
         r = min(new_shape[0] / shape[0], new_shape[1] / shape[1])
-        new_unpad = (int(round(shape[1] * r)), int(round(shape[0] * r)))
+        new_unpad = (round(shape[1] * r), round(shape[0] * r))
         dw, dh = new_shape[1] - new_unpad[0], new_shape[0] - new_unpad[1]
         dw /= 2
         dh /= 2
@@ -186,8 +199,8 @@ class YOLO26:
         if shape[::-1] != new_unpad:
             im = cv2.resize(im, new_unpad, interpolation=cv2.INTER_LINEAR)
 
-        top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
-        left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+        top, bottom = round(dh - 0.1), round(dh + 0.1)
+        left, right = round(dw - 0.1), round(dw + 0.1)
         im = cv2.copyMakeBorder(im, top, bottom, left, right, cv2.BORDER_CONSTANT, value=color)
 
         logging.info(f"letterbox: shape={shape}, r={r}, new_unpad={new_unpad}, dw={dw}, dh={dh}")
@@ -240,7 +253,7 @@ def draw_numpy(image, boxes, classes_ids, conf_scores):
         color = COLORS[cls_id % len(COLORS)]
         cv2.rectangle(image, (x1, y1), (x2, y2), color, 2)
         label = f"{cls_id}:{conf_scores[i]:.2f}"
-        cv2.putText(image, label, (x1, y1-5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+        cv2.putText(image, label, (x1, y1 - 5), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
     return image
 
 
@@ -262,7 +275,9 @@ def visualize_and_save(image, detections, output_path, conf_thresh=0.25):
             box = det[i, :4]
             cls_id = int(det[i, -1])
             conf = det[i, -2]
-            logging.info(f"Box {i+1}: cls={cls_id}, conf={conf:.3f}, coords=[{box[0]:.1f}, {box[1]:.1f}, {box[2]:.1f}, {box[3]:.1f}]")
+            logging.info(
+                f"Box {i + 1}: cls={cls_id}, conf={conf:.3f}, coords=[{box[0]:.1f}, {box[1]:.1f}, {box[2]:.1f}, {box[3]:.1f}]"
+            )
 
     cv2.imwrite(output_path, img)
     logging.info(f"Saved to {output_path}")
@@ -283,7 +298,7 @@ def main(args):
     img_paths = []
     if os.path.isdir(args.data):
         for fn in sorted(os.listdir(args.data)):
-            if fn.lower().endswith(('.jpg', '.png', '.jpeg', '.bmp', '.webp')):
+            if fn.lower().endswith((".jpg", ".png", ".jpeg", ".bmp", ".webp")):
                 img_paths.append(os.path.join(args.data, fn))
     elif os.path.isfile(args.data):
         img_paths.append(args.data)
@@ -329,11 +344,21 @@ def main(args):
 
 def argsparser():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data', type=str, default="/mnt/c/Users/finn.zhang/project/Datasets/JieMei/test/good/NG_NG_20260311162212348.jpg", help='image directory or single image path')
-    parser.add_argument('--onnx', type=str, default="/home/finn/ultralytics-main/runs/detect/train/weights/yolo26n_crop.onnx", help='onnx model path')
-    parser.add_argument('--output', type=str, default="./results/images", help='output directory')
-    parser.add_argument('--conf_thresh', type=float, default=0.25)
-    parser.add_argument('--iou_thresh', type=float, default=0.7)
+    parser.add_argument(
+        "--data",
+        type=str,
+        default="/mnt/c/Users/finn.zhang/project/Datasets/JieMei/test/good/NG_NG_20260311162212348.jpg",
+        help="image directory or single image path",
+    )
+    parser.add_argument(
+        "--onnx",
+        type=str,
+        default="/home/finn/ultralytics-main/runs/detect/train/weights/yolo26n_crop.onnx",
+        help="onnx model path",
+    )
+    parser.add_argument("--output", type=str, default="./results/images", help="output directory")
+    parser.add_argument("--conf_thresh", type=float, default=0.25)
+    parser.add_argument("--iou_thresh", type=float, default=0.7)
     return parser.parse_args()
 
 
