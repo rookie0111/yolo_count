@@ -4,14 +4,14 @@ import time
 from pathlib import Path
 
 import cv2
+
 # "/mnt/d/download/vidu-video-3321313083087446.mp4"
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ultralytics.solutions.object_counter import ObjectCounter
-
-from logger import CountLogger
 from display import NumberDisplay
-from utils import load_runtime_config, build_solution_kwargs
+from logger import CountLogger
+from ultralytics.solutions.object_counter import ObjectCounter
+from utils import build_solution_kwargs, load_runtime_config
 
 
 def main():
