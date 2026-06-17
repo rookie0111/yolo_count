@@ -6,7 +6,7 @@ class NumberDisplay:
 
     Attributes:
         digits (int): Number of digits on the display.
-        ser: Serial connection object.
+        set: Serial connection object.
 
     Examples:
         >>> display = NumberDisplay(port="/dev/ttyUSB0", baudrate=9600, digits=8)
@@ -22,14 +22,14 @@ class NumberDisplay:
             digits (int): Number of digits supported by the display.
         """
         self.digits = digits
-        self.ser = None
+        self.set = None
         try:
             import serial
 
-            self.ser = serial.Serial(port, baudrate, timeout=1)
+            self.set = serial.Serial(port, baudrate, timeout=1)
             time.sleep(1)
         except Exception:
-            self.ser = None
+            self.set = None
 
     def show_number(self, number):
         """Send a number to the display.
@@ -37,13 +37,13 @@ class NumberDisplay:
         Args:
             number (int): The number to display.
         """
-        if self.ser is None:
+        if self.set is None:
             return
         text = str(int(number)).zfill(self.digits)
-        self.ser.write((text + "\n").encode("ascii"))
+        self.set.write((text + "\n").encode("ascii"))
 
     def close(self):
         """Close the serial connection."""
-        if self.ser is not None:
-            self.ser.close()
-            self.ser = None
+        if self.set is not None:
+            self.set.close()
+            self.set = None
