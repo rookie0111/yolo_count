@@ -1,11 +1,13 @@
-import os, shutil
+import os
+import shutil
+
 from PIL import Image
 
 src = r"/mnt/c/Users/finn.zhang/project/Datasets/20260525_29_blue/OK/all"
 dst = r"/mnt/c/Users/finn.zhang/project/Datasets/20260525_29_blue/OK/all_corrupted"
 
 os.makedirs(dst, exist_ok=True)
-exts = {'.jpg', '.jpeg', '.png', '.bmp', '.tif', '.tiff'}
+exts = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
 
 corrupted = []
 for f in sorted(os.listdir(src)):
