@@ -1,0 +1,13 @@
+# Bag Counter Dataset
+# Train/val image paths relative to 'path'
+path: /mnt/c/Users/finn.zhang/project/Datasets/ObjectCounting.v1i.yolo26
+train: # train images (relative to 'path') 16551 images
+  - images/train
+
+val: 
+  - images/val
+test: 
+  - images/val
+
+names:
+  0: bag

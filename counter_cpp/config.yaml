@@ -1,0 +1,38 @@
+%YAML:1.0
+---
+# Bag Counter C++ Configuration
+
+model:
+  onnx_path: "/home/finn/ultralytics-main-count/runs/detect/bag_data6/weights/best.onnx"
+  rknn_path: "bag_counter.rknn"
+  input_size: 640
+  conf_thres: 0.35
+  iou_thres: 0.50
+  backend: "onnx"               # "onnx" or "rknn"
+
+tracker:
+  type: "bytetrack"
+  high_thresh: 0.60
+  track_thresh: 0.45
+  match_thresh: 0.75
+  track_buffer: 30
+
+counter:
+  # 2-point line: "x1,y1 x2,y2"
+  region: "1000,400 300,400"
+  direction: "any"               # any | up_right | down_right | up_left | down_left
+  enable_direction_check: 1
+  # 4-point polygon: "x1,y1 x2,y2 x3,y3 x4,y4"
+  # region: "200,200 500,200 500,400 200,400"
+  polygon_mode: "enter_exit"     # enter_exit | enter
+
+camera:
+  source: 0
+  width: 1280
+  height: 720
+  fps: 30
+
+show_window: 1
+save_video: 0
+output_path: "outputs/predict.mp4"
+source: ""
