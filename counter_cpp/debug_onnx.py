@@ -1,7 +1,10 @@
 from ultralytics import YOLO
 
 m = YOLO("/home/finn/ultralytics-main-count/runs/detect/bag_data6/weights/best.pt")
-r = m("/mnt/c/Users/finn.zhang/project/Datasets/ObjectCounting.v1i.yolo26/images/val/frame_100_jpg.rf.72707ebc70d741d5b9e1d11546d2e36d.jpg", conf=0.35)
+r = m(
+    "/mnt/c/Users/finn.zhang/project/Datasets/ObjectCounting.v1i.yolo26/images/val/frame_100_jpg.rf.72707ebc70d741d5b9e1d11546d2e36d.jpg",
+    conf=0.35,
+)
 boxes = r[0].boxes
 if boxes is not None and len(boxes) > 0:
     print(f"Detections: {len(boxes)}")
@@ -13,15 +16,17 @@ else:
     print("No detections")
 
 # Also test ONNX directly
-import onnxruntime as ort
-import numpy as np
 import cv2
+import numpy as np
+import onnxruntime as ort
 
 session = ort.InferenceSession("/home/finn/ultralytics-main-count/runs/detect/bag_data6/weights/best.onnx")
 print(f"\nONNX input: {session.get_inputs()[0].name} {session.get_inputs()[0].shape}")
 print(f"ONNX output: {session.get_outputs()[0].name} {session.get_outputs()[0].shape}")
 
-img = cv2.imread("/mnt/c/Users/finn.zhang/project/Datasets/ObjectCounting.v1i.yolo26/images/val/frame_100_jpg.rf.72707ebc70d741d5b9e1d11546d2e36d.jpg")
+img = cv2.imread(
+    "/mnt/c/Users/finn.zhang/project/Datasets/ObjectCounting.v1i.yolo26/images/val/frame_100_jpg.rf.72707ebc70d741d5b9e1d11546d2e36d.jpg"
+)
 h, w = img.shape[:2]
 img_rgb = cv2.cvtColor(cv2.resize(img, (640, 640)), cv2.COLOR_BGR2RGB)
 blob = img_rgb.astype(np.float32).transpose(2, 0, 1)[np.newaxis, ...] / 255.0
