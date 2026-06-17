@@ -4,13 +4,12 @@ from pathlib import Path
 import cv2
 import numpy as np
 import torch
+
 from ultralytics import YOLO
 
 
 def order_points(pts):
-    """
-    对4个点排序:
-    返回顺序: [top-left, top-right, bottom-right, bottom-left]
+    """对4个点排序: 返回顺序: [top-left, top-right, bottom-right, bottom-left].
     """
     pts = np.asarray(pts, dtype=np.float32).reshape(4, 2)
 
@@ -26,10 +25,7 @@ def order_points(pts):
 
 
 def crop_obb_perspective_cv(image, polygon):
-    """
-    OBB四点透视拉正裁剪。
-    image: OpenCV BGR图像
-    polygon: shape [4, 2] 或 [8]
+    """OBB四点透视拉正裁剪。 image: OpenCV BGR图像 polygon: shape [4, 2] 或 [8].
     """
     pts = order_points(polygon)
 
@@ -70,9 +66,7 @@ def crop_obb_perspective_cv(image, polygon):
 
 
 def crop_obb_bbox_cv(image, polygon):
-    """
-    OBB四点框外接水平矩形裁剪。
-    """
+    """OBB四点框外接水平矩形裁剪。."""
     h, w = image.shape[:2]
     pts = np.asarray(polygon, dtype=np.float32).reshape(4, 2)
 
@@ -88,9 +82,7 @@ def crop_obb_bbox_cv(image, polygon):
 
 
 def crop_xyxy_cv(image, xyxy):
-    """
-    普通水平框裁剪。
-    """
+    """普通水平框裁剪。."""
     h, w = image.shape[:2]
 
     x1, y1, x2, y2 = xyxy
@@ -107,8 +99,7 @@ def crop_xyxy_cv(image, xyxy):
 
 
 def save_image_same_format(save_path, image, original_ext, png_compression=1, jpg_quality=95):
-    """
-    按原图格式保存。
+    """按原图格式保存。.
 
     original_ext:
         .jpg / .jpeg / .png / .bmp / .tif / .tiff
@@ -150,8 +141,7 @@ def process_one_result(
     png_compression=1,
     jpg_quality=95,
 ):
-    """
-    处理单张图片预测结果。
+    """处理单张图片预测结果。.
 
     重点:
         不再使用 result.path 生成输出名。
@@ -250,9 +240,7 @@ def process_one_result(
 
 
 def collect_image_paths(input_path):
-    """
-    收集图片路径。
-    """
+    """收集图片路径。."""
     input_path = Path(input_path)
 
     extensions = {
@@ -265,11 +253,7 @@ def collect_image_paths(input_path):
     }
 
     if input_path.is_dir():
-        img_paths = [
-            str(p)
-            for p in sorted(input_path.iterdir())
-            if p.suffix.lower() in extensions
-        ]
+        img_paths = [str(p) for p in sorted(input_path.iterdir()) if p.suffix.lower() in extensions]
     elif input_path.is_file() and input_path.suffix.lower() in extensions:
         img_paths = [str(input_path)]
     else:
@@ -293,8 +277,7 @@ def crop_predictions(
     jpg_quality=95,
     print_interval=20,
 ):
-    """
-    批量预测并裁剪。
+    """批量预测并裁剪。.
 
     保证:
         1. 输出文件名与原图完全相同
