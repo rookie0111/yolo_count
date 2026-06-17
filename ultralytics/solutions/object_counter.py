@@ -6,7 +6,6 @@ from collections import defaultdict
 from typing import Any
 
 import cv2
-import numpy as np
 
 from ultralytics.solutions.solutions import BaseSolution, SolutionAnnotator, SolutionResults
 from ultralytics.utils.plotting import colors
@@ -172,7 +171,7 @@ class ObjectCounter(BaseSolution):
         label = f"COUNT: {self.total_count}"
         font_scale = max(1.5, plot_im.shape[1] / 800)
         thickness = max(3, int(font_scale * 2))
-        (tw, th), baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
+        (tw, th), _baseline = cv2.getTextSize(label, cv2.FONT_HERSHEY_SIMPLEX, font_scale, thickness)
         x, y = 20, 50 + th
         cv2.rectangle(plot_im, (x - 10, y - th - 15), (x + tw + 10, y + 15), (0, 0, 0), -1)
         cv2.putText(plot_im, label, (x, y), cv2.FONT_HERSHEY_SIMPLEX, font_scale, (0, 255, 255), thickness, cv2.LINE_AA)

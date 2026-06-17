@@ -3,8 +3,6 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-import pytest
-import yaml
 
 from ultralytics.solutions.object_counter import ObjectCounter
 
@@ -75,7 +73,7 @@ class TestConfigUtils:
     """Tests for configuration utility functions."""
 
     def test_load_runtime_config_defaults(self):
-        from src.utils import load_runtime_config, build_solution_kwargs
+        from src.utils import build_solution_kwargs, load_runtime_config
 
         cfg = load_runtime_config("configs/runtime.yaml")
         kwargs = build_solution_kwargs(cfg)
@@ -94,7 +92,7 @@ class TestConfigUtils:
         log_file = logger.log_file
         assert log_file.exists()
 
-        with open(log_file, "r") as f:
+        with open(log_file) as f:
             header = f.readline().strip()
             assert header == "timestamp,count,track_id"
 
@@ -105,11 +103,10 @@ class TestDisplayModule:
     """Tests for NumberDisplay (without real serial hardware)."""
 
     def test_display_graceful_failure(self):
-        import io
 
         from src.display import NumberDisplay
 
         display = NumberDisplay(port="/dev/nonexistent", baudrate=9600, digits=8)
-        assert display.ser is None
+        assert display.set is None
         display.show_number(123)
         display.close()
