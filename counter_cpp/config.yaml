@@ -8,7 +8,7 @@ model:
   input_size: 640
   conf_thres: 0.35
   iou_thres: 0.50
-  backend: "onnx"               # "onnx" or "rknn"
+  backend: "onnx" # "onnx" or "rknn"
 
 tracker:
   type: "bytetrack"
@@ -20,11 +20,11 @@ tracker:
 counter:
   # 2-point line: "x1,y1 x2,y2"
   region: "1000,400 300,400"
-  direction: "any"               # any | up_right | down_right | up_left | down_left
+  direction: "any" # any | up_right | down_right | up_left | down_left
   enable_direction_check: 1
   # 4-point polygon: "x1,y1 x2,y2 x3,y3 x4,y4"
   # region: "200,200 500,200 500,400 200,400"
-  polygon_mode: "enter_exit"     # enter_exit | enter
+  polygon_mode: "enter_exit" # enter_exit | enter
 
 camera:
   source: 0
