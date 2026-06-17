@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 import yaml
@@ -17,7 +16,7 @@ def load_runtime_config(config_path="configs/runtime.yaml"):
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
 
-    with open(config_path, "r", encoding="utf-8") as f:
+    with open(config_path, encoding="utf-8") as f:
         config = yaml.safe_load(f)
 
     return config
