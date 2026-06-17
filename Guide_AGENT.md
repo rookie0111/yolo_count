@@ -356,37 +356,32 @@ RKNN 转换示例：
 ```python
 from rknn.api import RKNN
 
+
 def main():
     rknn = RKNN()
 
-    rknn.config(
-        mean_values=[[0, 0, 0]],
-        std_values=[[255, 255, 255]],
-        target_platform='rk3588'
-    )
+    rknn.config(mean_values=[[0, 0, 0]], std_values=[[255, 255, 255]], target_platform="rk3588")
 
-    ret = rknn.load_onnx(model='weights/best.onnx')
+    ret = rknn.load_onnx(model="weights/best.onnx")
     if ret != 0:
-        print('Load ONNX failed')
+        print("Load ONNX failed")
         exit(ret)
 
-    ret = rknn.build(
-        do_quantization=True,
-        dataset='dataset.txt'
-    )
+    ret = rknn.build(do_quantization=True, dataset="dataset.txt")
     if ret != 0:
-        print('Build RKNN failed')
+        print("Build RKNN failed")
         exit(ret)
 
-    ret = rknn.export_rknn('weights/bag_counter.rknn')
+    ret = rknn.export_rknn("weights/bag_counter.rknn")
     if ret != 0:
-        print('Export RKNN failed')
+        print("Export RKNN failed")
         exit(ret)
 
     rknn.release()
-    print('RKNN export success')
+    print("RKNN export success")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()
 ```
 
@@ -524,18 +519,20 @@ NMS 阈值：0.45~0.6
 如果使用 USB 串口数字屏：
 
 ```python
-import serial
 import time
+
+import serial
+
 
 class NumberDisplay:
     def __init__(self, port="/dev/ttyUSB0", baudrate=9600, digits=8):
         self.digits = digits
-        self.ser = serial.Serial(port, baudrate, timeout=1)
+        self.set = serial.Serial(port, baudrate, timeout=1)
         time.sleep(1)
 
     def show_number(self, number):
         text = str(number).zfill(self.digits)
-        self.ser.write((text + "\n").encode("ascii"))
+        self.set.write((text + "\n").encode("ascii"))
 ```
 
 实际通信格式以数字屏商家协议为准。
