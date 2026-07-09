@@ -72,7 +72,7 @@ def convert_one_json(json_path, output_txt_path, class_map=None):
         lines.append(line)
 
     with open(output_txt_path, "w", encoding="utf-8") as f:
-        f.write("\n".join(lines))
+        f.write("/n".join(lines))
 
 
 def batch_convert_json_to_yolo_obb(json_dir, output_dir, class_map=None, recursive=False):
@@ -106,7 +106,7 @@ def batch_convert_json_to_yolo_obb(json_dir, output_dir, class_map=None, recursi
             print(f"[失败] {json_path}, 错误: {e}")
             count_fail += 1
 
-    print("\n========== 转换完成 ==========")
+    print("/n========== 转换完成 ==========")
     print(f"成功: {count_ok}")
     print(f"失败: {count_fail}")
     print(f"输出目录: {output_dir}")
@@ -114,8 +114,8 @@ def batch_convert_json_to_yolo_obb(json_dir, output_dir, class_map=None, recursi
 
 if __name__ == "__main__":
     # ======== 这里改成你的路径 ========
-    json_dir =  r"/mnt/c/Users/finn.zhang/project/Datasets/20260515_transparent_80ml/yolo_dataset/images/train"
-    output_dir = r"/mnt/c/Users/finn.zhang/project/Datasets/20260515_transparent_80ml/yolo_dataset/labels/train"
+    json_dir =  r"/mnt/c/Users/finn.zhang/project/Datasets/yolo_zhonghua_counter/images/train"
+    output_dir = r"/mnt/c/Users/finn.zhang/project/Datasets/yolo_zhonghua_counter/labels/train"
 
     # 如果你的 label 本身就是 "0"、"1"、"2"，可以设为 None
     class_map = None

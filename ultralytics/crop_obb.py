@@ -296,9 +296,9 @@ def crop_predictions(input_path, model_path, output_folder, conf=0.25, use_obb=T
 
 
 if __name__ == "__main__":
-    input_path = r"/mnt/c/Users/finn.zhang/project/Datasets/20260617_blue_80ml/OK"
+    input_path = r"/mnt/c/Users/finn.zhang/project/Datasets/20260626_yellow_180ml/NG"
     model_path = r"/home/finn/ultralytics-main/runs/obb/blue_bottle/weights/best.pt"
-    output_folder = r"/mnt/c/Users/finn.zhang/project/Datasets/20260617_blue_80ml/OK_crop"
+    output_folder = r"/mnt/c/Users/finn.zhang/project/Datasets/20260626_yellow_180ml/NG_crop"
     conf = 0.25
 
     # obb_mode:

@@ -1,6 +1,8 @@
 #include "counter.h"
 #include "bytetrack.h"
+#include "detector.h"
 #include "yolo_detector.h"
+#include "sam3_detector.h"
 #include "config.h"
 
 #include <opencv2/opencv.hpp>
@@ -27,22 +29,46 @@ cv::Mat BagCounter::process(const cv::Mat& frame) {
     static BYTETracker::Args tracker_args;
     static bool tracker_init = false;
     static std::unique_ptr<BYTETracker> tracker;
-    static std::unique_ptr<YOLODetector> detector;
+    static std::unique_ptr<BaseDetector> detector;
 
     if (!detector) {
-        std::string model_path;
+        const std::string& mode = _config.model.mode;
         std::string backend = _config.model.backend;
-        if (backend == "rknn") {
-            model_path = _config.model.rknn_path;
+
+        if (mode == "sam3") {
+#ifdef ONNX_ENABLE
+            std::string text_embed_path = _config.model.sam3_text_embed_path;
+            if (text_embed_path.empty()) {
+                text_embed_path = "sam3_text_embeddings.yml";
+            }
+            detector = std::make_unique<SAM3Detector>(
+                _config.model.sam3_backbone_path,
+                _config.model.sam3_detector_path,
+                text_embed_path,
+                _config.model.conf_thres,
+                _config.model.iou_thres
+            );
+            std::cout << "[Counter] Using SAM3 detector mode" << std::endl;
+#else
+            std::cerr << "[Counter] SAM3 mode requires ONNX Runtime support" << std::endl;
+            return frame.clone();
+#endif
         } else {
-            model_path = _config.model.onnx_path;
+            // Default: YOLO mode
+            std::string model_path;
+            if (backend == "rknn") {
+                model_path = _config.model.rknn_path;
+            } else {
+                model_path = _config.model.onnx_path;
+            }
+            detector = std::make_unique<YOLODetector>(
+                model_path, backend,
+                _config.model.input_size,
+                _config.model.conf_thres,
+                _config.model.iou_thres
+            );
+            std::cout << "[Counter] Using YOLO detector mode" << std::endl;
         }
-        detector = std::make_unique<YOLODetector>(
-            model_path, backend,
-            _config.model.input_size,
-            _config.model.conf_thres,
-            _config.model.iou_thres
-        );
     }
 
     if (!tracker_init) {

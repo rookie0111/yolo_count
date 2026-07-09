@@ -1,5 +1,7 @@
 #pragma once
 
+#include "detector.h"
+
 #include <vector>
 #include <string>
 #include <memory>
@@ -13,21 +15,15 @@
 #include "rknn_api.h"
 #endif
 
-struct Detection {
-    float x1, y1, x2, y2;  // bbox
-    float conf;              // confidence
-    int cls;                 // class index
-};
-
-class YOLODetector {
+class YOLODetector : public BaseDetector {
 public:
     YOLODetector(const std::string& model_path, const std::string& backend,
                  int input_size, float conf_thres, float iou_thres);
     ~YOLODetector();
 
-    std::vector<Detection> detect(const cv::Mat& image);
-
-    cv::Size input_size() const { return cv::Size(_input_size, _input_size); }
+    std::vector<Detection> detect(const cv::Mat& image) override;
+    cv::Size input_size() const override { return cv::Size(_input_size, _input_size); }
+    std::string backend_name() const override { return "yolo"; }
 
 private:
     std::string _backend;
@@ -69,8 +65,6 @@ private:
     float iou(const Detection& a, const Detection& b);
     void nms(std::vector<Detection>& dets);
 
-    static void softmax(const float* x, int length, float* result);
-    static int argmax(const float* x, int length);
     static cv::Mat letterbox(const cv::Mat& img, const cv::Size& new_shape,
                               cv::Scalar color = cv::Scalar(114, 114, 114));
 };

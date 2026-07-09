@@ -13,6 +13,7 @@ __pycache__/
 counter_cpp/eigen3/
 .vscode/
 counter_cpp/build/
+weights/
 .idea/
 
 # Python source

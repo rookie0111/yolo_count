@@ -4,10 +4,11 @@
 #include <set>
 #include <unordered_map>
 #include <string>
+#include <memory>
 #include <opencv2/opencv.hpp>
 
 #include "config.h"
-#include "yolo_detector.h"
+#include "detector.h"
 #include "bytetrack.h"
 
 class BagCounter {

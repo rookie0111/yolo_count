@@ -3,12 +3,21 @@
 # Bag Counter C++ Configuration
 
 model:
-  onnx_path: "/home/finn/ultralytics-main-count/runs/detect/bag_data6/weights/best.onnx"
+  mode: "yolo"                 # "yolo" or "sam3"
+
+  # YOLO mode
+  onnx_path: "/home/finn/ultralytics-main-count/weights/best.onnx"
   rknn_path: "bag_counter.rknn"
   input_size: 640
   conf_thres: 0.35
   iou_thres: 0.50
   backend: "onnx"               # "onnx" or "rknn"
+
+  # SAM3 mode
+  sam3_backbone_path: "/home/finn/ultralytics-main-count/sam3_backbone.onnx"
+  sam3_detector_path: "/home/finn/ultralytics-main-count/sam3_detector.onnx"
+  sam3_text_embed_path: "/home/finn/ultralytics-main-count/counter_cpp/sam3_text_embeddings.yml"
+  sam3_text_prompt: "bag on the conveyor belt"
 
 tracker:
   type: "bytetrack"

@@ -70,3 +70,61 @@ Host github.com
     Port 443
     User git
 ```
+
+## YOLO Pipeline — SAM3 Auto-label → Train → ONNX Export
+
+Automated pipeline for training custom YOLO models with SAM3-generated labels.
+
+### Quick start
+
+```bash
+cd ultralytics/labels
+
+# Full pipeline (one command)
+python pipeline.py all \
+    --images /path/to/images/val \
+    --labels /path/to/labels/val \
+    --dataset-root /path/to/dataset \
+    --task detect --epochs 100 \
+    --prompt "object to detect" --names "class_name"
+
+# Or step by step
+python pipeline.py precompute --prompt "object to detect"     # 1. Text embeddings
+python pipeline.py label --images ... --labels ... --prompt ... # 2. Auto-label
+python pipeline.py data --dataset-root ... --names ...          # 3. YAML config
+python pipeline.py train --data data.yaml --task detect ...     # 4. Train
+python pipeline.py export --weights runs/.../best.pt          # 5. ONNX
+```
+
+### Task types
+
+| `--task` | Label format | Model suffix | Label `--label-task` |
+|----------|-------------|--------------|----------------------|
+| `detect` | `class cx cy w h` | `.pt` | `hbb` |
+| `obb` | `class x1 y1 x2 y2 x3 y3 x4 y4` | `-obb.pt` | `obb` |
+| `segment` | `class x1 y1 x2 y2 ...` polygon | `-seg.pt` | `hbb` |
+| `track` | Same as detect | `.pt` | — |
+
+### Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `ultralytics/labels/pipeline.py` | Main pipeline with 6 subcommands |
+| `ultralytics/labels/SKILL.md` | Skill documentation |
+| `ultralytics/labels/precompute_text_embed.py` | Text embedding pre-computation |
+| `ultralytics/labels/auto_label_sam3.py` | Standalone SAM3 labeling |
+| `ultralytics/labels/visualize_labels.py` | Label visualization |
+| `ultralytics/labels/fix_labels.py` | Fix label formatting |
+| `ultralytics/sam3_predict.py` | SAM3 Python predictor with visualization |
+| `tools/export_sam3_onnx.py` | Export SAM3 vision backbone → ONNX |
+| `tools/export_sam3_detector_onnx.py` | Export SAM3 detector core → ONNX |
+
+### Installed skills (opencode)
+
+| Skill | Usage |
+|-------|-------|
+| `find-skills` / `find-skills-cn` | Discover and install new agent skills |
+| `qiaomu-ai-prd` | Generate AI-implementable PRDs from product ideas |
+| `customize-opencode` | Edit opencode configuration (agents, skills, permissions) |
+
+To list available skills: `/help` in opencode, or use the `skill` tool with `find-skills`.

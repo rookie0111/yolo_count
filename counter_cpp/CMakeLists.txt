@@ -59,6 +59,8 @@ link_directories(${ONNXRUNTIME_ROOT}/lib)
 file(GLOB SOURCES
     ${CMAKE_SOURCE_DIR}/*.cpp
 )
+# Exclude test scripts and Python files
+list(FILTER SOURCES EXCLUDE REGEX ".*debug_onnx\\.cpp$|.*test_.*\\.cpp$")
 
 # 可执行文件
 add_executable(${PROJECT_NAME} ${SOURCES})
@@ -91,12 +93,3 @@ add_definitions(-DONNX_ENABLE)
 
 message(STATUS "ONNX Runtime: ${ONNXRUNTIME_ROOT}")
 message(STATUS "OpenCV: ${OpenCV_INCLUDE_DIRS}")
-# # ONNX 推理
-#./build/bag_counter --model /home/finn/ultralytics-main-count/runs/detect/bag_data6/weights/best.onnx --source /mnt/d/download/vidu-video-3321389545428324.mp4 --show --save
-./build/bag_counter --model ../runs/detect/bag_data6/weights/best.onnx --source /mnt/d/download/vidu-video-3321389545428324.mp4 --show --save
-# 用配置文件
-#./build/bag_counter --config config.yaml --source 0 --show
-
-# RKNN 部署 (需加 -DRKNN=ON 重编译)
-#cmake -B build -DWITH_RKNN=ON && cmake --build build -j4
-#./build/bag_counter --model bag_counter.rknn --backend rknn --source 0 --save

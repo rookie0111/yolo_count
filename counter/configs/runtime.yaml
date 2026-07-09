@@ -1,0 +1,42 @@
+# Bag Counter Runtime Configuration
+# Copy and modify this file for your deployment
+
+camera:
+  source: 0
+  width: 1280
+  height: 720
+  fps: 30
+
+model:
+  type: yolo26
+  weight: runs/detect/bag_data6/weights/best.pt
+  rknn_weight: weights/bag_counter.rknn
+  input_size: 640
+  conf_thres: 0.35
+  iou_thres: 0.50
+
+tracker:
+  type: bytetrack
+  track_thresh: 0.45
+  high_thresh: 0.60
+  match_thresh: 0.75
+  track_buffer: 30
+
+counter:
+  line_p1: [1000, 400]
+  line_p2: [300, 400]
+  direction: up_right
+  enable_direction_check: true
+
+runtime:
+  target_fps: 10
+  save_log: true
+  save_debug_image: false
+  show_window: false
+  reset_count_on_start: true
+
+display:
+  enable: false
+  port: /dev/ttyUSB0
+  baudrate: 9600
+  digits: 8

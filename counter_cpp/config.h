@@ -12,14 +12,21 @@ struct CameraConfig {
 };
 
 struct ModelConfig {
+    std::string mode = "yolo";     // "yolo" or "sam3"
     std::string type = "yolov8";
     std::string weight;          // .pt path (not used in C++)
-    std::string onnx_path;       // ONNX model path
+    std::string onnx_path;       // ONNX model path (YOLO)
     std::string rknn_path;       // RKNN model path
     int input_size = 640;
     float conf_thres = 0.35f;
     float iou_thres = 0.50f;
     std::string backend = "onnx"; // "onnx" or "rknn"
+
+    // SAM3 specific
+    std::string sam3_backbone_path;      // sam3_backbone.onnx
+    std::string sam3_detector_path;      // sam3_detector.onnx
+    std::string sam3_text_embed_path;    // sam3_text_embeddings.yml
+    std::string sam3_text_prompt = "bag on the conveyor belt";
 };
 
 struct TrackerConfig {

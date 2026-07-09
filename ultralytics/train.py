@@ -13,7 +13,7 @@ def train():
 def train_bag():
     model = YOLO("/home/finn/ultralytics-main/ultralytics/yolo26n.pt")
     # model = YOLO("yolo26n-obb.pt")
-    results = model.train(data="/home/finn/ultralytics-main-count/ultralytics/cfg/datasets/bag_data.yaml", epochs=100, imgsz=640, name="bag_data")
+    results = model.train(data="/home/finn/ultralytics-main-count/ultralytics/cfg/datasets/mydata_counter.yaml", epochs=100, imgsz=640, name="bag_data_zhonghua")
     model.val()
 def predict():
     # model = YOLO("/home/finn/ultralytics-main/runs/detect/train/weights/bfest.pt")
@@ -21,7 +21,7 @@ def predict():
     results = model.predict("/mnt/c/Users/finn.zhang/project/Datasets/hainanjiahua_20260416/NG_1/NG_20260414162419520.png", end2end=False,save=True)  # inference
     print("end")
 def export():
-    model = YOLO("/home/finn/ultralytics-main-count/runs/detect/bag_data6/weights/best.pt")
+    model = YOLO("/home/finn/ultralytics-main-count/counter_cpp/runs/detect/bag_data_zhonghua4/weights/best.pt")
     # Use one-to-many head (requires NMS)
     
     # metrics = model.val(data="coco.yaml", end2end=False)  # validation
