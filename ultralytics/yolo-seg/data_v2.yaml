@@ -1,0 +1,6 @@
+# YOLO-seg v2 数据集配置
+path: /mnt/c/Users/finn.zhang/project/Datasets/xutong_military_yolo_seg_v2
+train: images/train
+val: images/val
+nc: 2
+names: ['0', '1']

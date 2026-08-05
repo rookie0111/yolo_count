@@ -1,0 +1,17 @@
+# SAM 2.1 自定义数据集微调配置
+dataset:
+  img_folder: /mnt/c/Users/finn.zhang/project/Datasets/xutong_military_sam2/images
+  gt_folder: /mnt/c/Users/finn.zhang/project/Datasets/xutong_military_sam2/masks
+  file_list_txt: /mnt/c/Users/finn.zhang/project/Datasets/xutong_military_sam2/train.txt
+  multiplier: 2
+
+scratch:
+  resolution: 1024
+  train_batch_size: 1
+  num_train_workers: 4
+  num_frames: 1
+  max_num_objects: 10
+  base_lr: 5.0e-6
+  vision_lr: 3.0e-06
+  phases_per_epoch: 1
+  num_epochs: 40

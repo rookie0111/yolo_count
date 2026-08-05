@@ -1,0 +1,12 @@
+# YOLO-seg 数据集配置
+# WSL 环境路径
+
+path: /mnt/c/Users/finn.zhang/project/Datasets/xutong_military_yolo_seg
+train: images/train
+val: images/val
+
+# 类别数
+nc: 2
+
+# 类别名称
+names: ['0', '1']
